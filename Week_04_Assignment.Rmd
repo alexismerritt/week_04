@@ -12,6 +12,10 @@ knitr::opts_chunk$set(echo = TRUE)
 1. Use the following code chunk to get started with the assignment. This chunk loads the `tidyverse` and `here` packages. Why does this work? What is the `pacman` package and why is it valuable?
 
 ```{r}
+###The first line of code above that starts with an "if" statement is useful when sharing code between others. This code ensures that whoever runs the script next will have the necessary packages uploaded into their script in order to make the script usable.
+```
+
+```{r}
 if(! require("pacman")) install.packages("pacman")
 
 pacman::p_load(
@@ -23,44 +27,100 @@ pacman::p_load(
 2. Read the `burritos.csv` file located in the `Data` folder into an object called `burritos`.
 
 ```{r}
-
+burritos <- read.csv2(here::here("Data", "burritos.csv"),
+                      sep = ",")
 ```
 
 3. Determine how many `NA` values exist in each column.
 
 ```{r}
+summary(burritos)
 
 ```
+
+```{r}
+#Mass(g) - 401 NAs
+#
+```
+
 
 4. Many of the columns in the dataset use `x` to indicate whether or not the burrito includes the ingredient or not. Convert these columns into logical columns. Overwrite the original dataframe with the newly mutated dataframe.
 
 ```{r}
 
+library(tidyr)
+library(tidyverse)
+library(dplyr)
+
+
+#burritos_clean <-
+ # burritos %>% 
+  #mutate(across(Beef:Zucchini), ~ if_else(across(Beef:Zucchini) == "x",
+   #                               true = TRUE,
+    #                              false = FALSE))
+
+burritos_clean <-
+  burritos %>% 
+  mutate(across(c(Beef:Zucchini), ~if_else(is.na.data.frame(.),F,T)))
+
+
+#I wasn't able to get this method to work exactly, this kept giving me only True values throughout all of the ingredients for each burrito. I think this may be due to my use of "is.na.data.fram", so I did not rewrite the original dataframe. For question 5 I've attempted to answer but will not be able to test how accurately the sequence works.
 ```
 
 5. For these same fields, determine how many burritos include each ingredient.
 
 ```{r}
-
+burritos_clean %>% 
+  sum(across(c(Beef:Zucchini)))
 ```
 
 6. Several of the burritos are missing Yelp and Google review values. Replace the missing values by imputing them with the *median* of their respective column. Overwrite the original dataframe with the newly mutated dataframe.
 
 ```{r}
-
+burritos_clean2 <-
+  burritos_clean %>% 
+  mutate(Yelp, if_else(condition = Yelp(is.na),
+                       true = median(Yelp),
+                       false = Yelp)) %>% 
+  mutate(Google, if_else(condition = Google(is.na),
+                         true = median(Google),
+                         false = Google))
+  
 ```
 
 7. Similarly, several of the burritos are missing `Length`, `Circum`, and `Volume` values. Replace the missing values by imputing them with the *mean* of their respective column. Overwrite the original dataframe with the newly mutated dataframe.
 
 ```{r}
-
+burritos_clean3 <-
+  burritos_clean %>% 
+  mutate(across(Length:Volume), if_else(condition = is.na(.),
+                                        true = mean(across(Length:Volume)),
+                                        false = across(Length:Volume)))
 ```
 
 8. The `Rec` column is messy. Convert it to a logical field. Overwrite the original dataframe with the newly mutated dataframe.
 
 ```{r}
+burritos_clean4 <-
+  burritos_clean %>% 
+  mutate(Rec, if_else(starts_with("y"),
+                      true = TRUE,
+                      false = FALSE))
 
 ```
 
 9. Create and answer a question to answer about the burritos dataset utilizing any of the techniques we discussed in class this week. Utilize themes to improve your visualization.
+
+
+```{r}
+#This is an attempt to see if there are differences in the "quality" of the different burritos found at each location and if there is a correlation between the quality of all of the burrito types or if specific restuarants do one type of burrito particularly well
+
+
+burritos_clean %>% 
+  ggplot() +
+  geom_bar(aes(x = Location,
+               y = Rec,
+               fill = Burrito))
+ 
+```
 
